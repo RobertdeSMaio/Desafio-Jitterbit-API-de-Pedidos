@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Order = require("./Order");
 
 const Item = sequelize.define(
   "Item",
@@ -28,14 +27,5 @@ const Item = sequelize.define(
     timestamps: false,
   },
 );
-
-// Configuração do Relacionamento (SQL Association)
-Order.hasMany(Item, {
-  foreignKey: "orderId",
-  onDelete: "CASCADE", // Se deletar o pedido, deleta os itens
-});
-Item.belongsTo(Order, {
-  foreignKey: "orderId",
-});
 
 module.exports = Item;

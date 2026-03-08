@@ -24,4 +24,4 @@ const Order = sequelize.define(
   },
 );
 
-module.exports = Order;
+module.exports = new Order();

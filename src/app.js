@@ -1,42 +1,59 @@
 require("dotenv").config();
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 const sequelize = require("./config/database");
 const orderRoutes = require("./routes/orderRoutes");
+const Order = require("./models/Order");
+const Item = require("./models/Item");
+const vestauth = require("vestauth");
 
-// Importação opcional para documentação (Recurso Adicional)
-// const swaggerUi = require('swagger-ui-express');
-// const swaggerDocument = require('./swagger.json');
+// 1. Relacionamentos
+Order.hasMany(Item, {
+  foreignKey: "orderId",
+  as: "items",
+  onDelete: "CASCADE",
+});
+Item.belongsTo(Order, { foreignKey: "orderId" });
 
 const app = express();
-
-// 1. Middlewares Globais
-app.use(express.json()); // Essencial para receber o JSON do pedido no body
-
-// 2. Definição de Rotas
-// Conforme os requisitos: URL base http://localhost:3000/order
-app.use("/order", orderRoutes);
-
-// Rota de documentação (Opcional - agrega valor ao seu GitHub)
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// 3. Inicialização do Banco de Dados e Servidor
 const PORT = process.env.PORT || 3000;
 
+// 2. Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: { title: "API Pedidos", version: "1.0.0" },
+    servers: [{ url: `http://localhost:${PORT}` }],
+  },
+  apis: ["./src/routes/*.js"],
+};
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+
+// 3. Middlewares
+app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/order", orderRoutes);
+
+// 4. Inicialização Segura
 async function startServer() {
   try {
-    // Autentica e Sincroniza os Modelos com o Banco SQL
+    // Autentica no Neon via Sequelize
     await sequelize.authenticate();
-    console.log("Conexão com o banco SQL estabelecida com sucesso.");
+    console.log("✅ Conexão com Neon/PostgreSQL confirmada.");
 
-    // sync() cria as tabelas se elas não existirem (Cuidado em produção)
+    // Sincroniza tabelas
     await sequelize.sync({ force: false });
+    console.log("✅ Tabelas sincronizadas.");
 
+    // Sobe o servidor Express (apenas uma vez)
     app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
-      console.log(`Acesse: http://localhost:${PORT}/order`);
+      console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
+      console.log(`📄 Documentação: http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
-    console.error("Não foi possível conectar ao banco de dados:", error);
+    console.error("❌ Falha na infraestrutura:", error.message);
+    process.exit(1);
   }
 }
 
