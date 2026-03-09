@@ -7,12 +7,10 @@ class OrderController {
     try {
       const { numeroPedido, valorTotal, dataCriacao, items } = req.body;
 
-      // 1. Mapeamento dos campos (Mapping De-Para)
       const orderMapped = {
         orderId: numeroPedido,
         value: valorTotal,
         creationDate: new Date(dataCriacao),
-        // Mapeando o array de itens internamente
         Items: items.map((item) => ({
           productId: item.idItem,
           quantity: item.quantidadeItem,
@@ -20,18 +18,15 @@ class OrderController {
         })),
       };
 
-      // 2. Persistência no Banco SQL (com transação para garantir integridade)
       const result = await Order.create(orderMapped, {
         include: [{ model: Item }],
       });
 
-      // 3. Resposta de Sucesso (HTTP 201 Created)
       return res.status(201).json({
         message: "Pedido criado com sucesso!",
         data: result,
       });
     } catch (error) {
-      // 4. Tratamento de Erros Robusto (Critério de Avaliação)
       return res.status(400).json({
         error: "Falha na criação do pedido",
         message: error.message,
@@ -39,7 +34,7 @@ class OrderController {
     }
   }
 
-  // Obter dados por parâmetro na URL (Obrigatório)
+  // Obter dados por parâmetro na URL
   async getById(req, res) {
     try {
       const { orderId } = req.params;
@@ -50,6 +45,62 @@ class OrderController {
       }
 
       return res.json(order);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno no servidor" });
+    }
+  }
+
+  // Listar todos os pedidos
+  async listAll(req, res) {
+    try {
+      const orders = await Order.findAll({ include: [Item] });
+      return res.json(orders);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno no servidor" });
+    }
+  }
+
+  // Atualizar pedido
+  async update(req, res) {
+    try {
+      const { orderId } = req.params;
+      const { numeroPedido, valorTotal, dataCriacao } = req.body;
+
+      const order = await Order.findByPk(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Pedido não encontrado" });
+      }
+
+      await order.update({
+        orderId: numeroPedido ?? order.orderId,
+        value: valorTotal ?? order.value,
+        creationDate: dataCriacao ? new Date(dataCriacao) : order.creationDate,
+      });
+
+      return res.json({
+        message: "Pedido atualizado com sucesso!",
+        data: order,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        error: "Falha na atualização do pedido",
+        message: error.message,
+      });
+    }
+  }
+
+  // Deletar pedido
+  async delete(req, res) {
+    try {
+      const { orderId } = req.params;
+
+      const order = await Order.findByPk(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Pedido não encontrado" });
+      }
+
+      await order.destroy();
+      return res.json({ message: "Pedido deletado com sucesso!" });
     } catch (error) {
       return res.status(500).json({ error: "Erro interno no servidor" });
     }

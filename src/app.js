@@ -6,7 +6,6 @@ const sequelize = require("./config/database");
 const orderRoutes = require("./routes/orderRoutes");
 const Order = require("./models/Order");
 const Item = require("./models/Item");
-const vestauth = require("vestauth");
 
 // 1. Relacionamentos
 Order.hasMany(Item, {
@@ -25,6 +24,15 @@ const swaggerOptions = {
     openapi: "3.0.0",
     info: { title: "API Pedidos", version: "1.0.0" },
     servers: [{ url: `http://localhost:${PORT}` }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
   },
   apis: ["./src/routes/*.js"],
 };
@@ -40,19 +48,19 @@ async function startServer() {
   try {
     // Autentica no Neon via Sequelize
     await sequelize.authenticate();
-    console.log("✅ Conexão com Neon/PostgreSQL confirmada.");
+    console.log("Conexão com Neon/PostgreSQL confirmada.");
 
     // Sincroniza tabelas
     await sequelize.sync({ force: false });
-    console.log("✅ Tabelas sincronizadas.");
+    console.log("Tabelas sincronizadas.");
 
     // Sobe o servidor Express (apenas uma vez)
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
-      console.log(`📄 Documentação: http://localhost:${PORT}/api-docs`);
+      console.log(`Servidor rodando em: http://localhost:${PORT}`);
+      console.log(`Documentação: http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
-    console.error("❌ Falha na infraestrutura:", error.message);
+    console.error("Falha na infraestrutura:", error.message);
     process.exit(1);
   }
 }

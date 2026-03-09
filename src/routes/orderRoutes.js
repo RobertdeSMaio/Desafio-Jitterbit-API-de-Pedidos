@@ -4,27 +4,144 @@ const OrderController = require("../controllers/OrderController");
 const authMiddleware = require("../middlewares/auth");
 const AuthController = require("../controllers/AuthController");
 
-// O usuário precisa enviar o Token para criar um pedido
-router.post("/", authMiddleware, OrderController.create);
-// Rota para gerar o token
+/**
+ * @swagger
+ * tags:
+ *   name: Orders
+ *   description: Gerenciamento de pedidos
+ */
+
+/**
+ * @swagger
+ * /order/login:
+ *   post:
+ *     summary: Gerar token de autenticação
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token gerado com sucesso
+ */
 router.post("/login", AuthController.login);
-// 1. Criar um novo pedido
-// URL: http://localhost:3000/order
-router.post("/", OrderController.create);
 
-// 2. Obter dados do pedido por parâmetro
-// URL: http://localhost:3000/order/v10089016vdb
-router.get("/:orderId", OrderController.getById);
+/**
+ * @swagger
+ * /order:
+ *   post:
+ *     summary: Criar um novo pedido
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [numeroPedido, valorTotal, dataCriacao, items]
+ *             properties:
+ *               numeroPedido:
+ *                 type: string
+ *               valorTotal:
+ *                 type: number
+ *               dataCriacao:
+ *                 type: string
+ *                 format: date
+ *               items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     idItem:
+ *                       type: integer
+ *                     quantidadeItem:
+ *                       type: integer
+ *                     valorItem:
+ *                       type: number
+ *     responses:
+ *       201:
+ *         description: Pedido criado com sucesso
+ *       400:
+ *         description: Erro na criação
+ */
+router.post("/", authMiddleware, OrderController.create);
 
-// 3. Listar todos os pedidos
-// URL: http://localhost:3000/order/list
-// Nota: Definir esta rota ANTES de rotas com parâmetros genéricos se necessário
+/**
+ * @swagger
+ * /order/list:
+ *   get:
+ *     summary: Listar todos os pedidos
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos
+ */
 router.get("/list", OrderController.listAll);
 
-// 4. Atualizar pedido
+/**
+ * @swagger
+ * /order/{orderId}:
+ *   get:
+ *     summary: Obter pedido por ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pedido encontrado
+ *       404:
+ *         description: Pedido não encontrado
+ *   put:
+ *     summary: Atualizar pedido
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               valorTotal:
+ *                 type: number
+ *               dataCriacao:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Pedido atualizado
+ *   delete:
+ *     summary: Deletar pedido
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pedido deletado
+ */
+router.get("/:orderId", OrderController.getById);
 router.put("/:orderId", OrderController.update);
-
-// 5. Deletar pedido
 router.delete("/:orderId", OrderController.delete);
 
 module.exports = router;
