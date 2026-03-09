@@ -33,7 +33,28 @@ const AuthController = require("../controllers/AuthController");
  *         description: Token gerado com sucesso
  */
 router.post("/login", AuthController.login);
-
+/**
+ * @swagger
+ * /order/register:
+ *   post:
+ *     summary: Registrar novo usuário
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token gerado com sucesso
+ */
+router.post("/register", AuthController.register);
 /**
  * @swagger
  * /order:

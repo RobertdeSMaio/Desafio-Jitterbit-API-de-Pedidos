@@ -1,38 +1,32 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const Users = require("../models/Users");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-class AuthController {
-  async login(req, res) {
-    const { username, password } = req.body;
+const Users = sequelize.define(
+  "Users",
+  {
+    username: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    token: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    creationDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    tableName: "users",
+    timestamps: false,
+  },
+);
 
-    try {
-      // 1. Busca o usuário no banco
-      const user = await Users.findByPk(username);
-
-      if (!user) {
-        return res.status(401).json({ message: "Login inválido!" });
-      }
-
-      // 2. Compara a senha com o hash salvo
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (!passwordMatch) {
-        return res.status(401).json({ message: "Login inválido!" });
-      }
-
-      // 3. Gera o token
-      const token = jwt.sign({ username }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
-      return res.json({ auth: true, token });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ error: "Erro interno", message: error.message });
-    }
-  }
-}
-
-module.exports = new AuthController();
+module.exports = Users;

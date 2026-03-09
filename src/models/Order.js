@@ -16,6 +16,7 @@ const Order = sequelize.define(
     creationDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
