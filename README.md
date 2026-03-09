@@ -1,4 +1,4 @@
-# 🛒 Desafio Jitter — API de Pedidos
+# 🛒 Desafio Jitterbit — API de Pedidos
 
 API RESTful para gerenciamento de pedidos, desenvolvida com Node.js, Express, Sequelize e PostgreSQL (Neon). Inclui autenticação JWT, documentação Swagger e integração com banco de dados em nuvem.
 
