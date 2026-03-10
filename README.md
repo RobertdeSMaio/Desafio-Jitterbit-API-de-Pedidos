@@ -60,7 +60,7 @@ DATABASE_URL=postgresql://usuario:senha@host/banco?sslmode=require
 JWT_SECRET=sua_chave_secreta_aqui
 ```
 
-> A `DATABASE_URL` pode ser obtida no painel do [Neon](https://neon.tech) em **Connection Details → Connection string**.
+> A `DATABASE_URL` pode ser obtida no painel do [Neon](https://neon.tech) em **Connection Details → Connection string**. (DB usado de base para criação)
 
 ---
 
